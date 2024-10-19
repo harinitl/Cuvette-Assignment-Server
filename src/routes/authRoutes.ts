@@ -8,7 +8,7 @@ const router = express.Router();
 
 const generateJwt = (companyId: string) => {
   return jwt.sign({ companyId }, process.env.AUTH_SECRET || "secret", {
-    expiresIn: "1h", 
+    expiresIn: "1h",
   });
 };
 
@@ -37,12 +37,35 @@ router.post("/register", async (req: Request, res: Response) => {
 
   await company.save();
 
+  let emailSent = false;
+  let smsSent = false;
+
   try {
     await sendEmailVerificationLink({ email, otp: emailOtp });
-    await sendSmsOtp({ mobile, otp: mobileOtp }); 
-    res.send("Company registered. OTPs have been sent to your email and mobile.");
+    emailSent = true;
   } catch (error) {
-    res.status(500).json({ error: "Failed to send verification OTPs" });
+    console.error("Failed to send email OTP:", error);
+  }
+
+  try {
+    await sendSmsOtp({ mobile, otp: mobileOtp });
+    smsSent = true;
+  } catch (error) {
+    console.error("Failed to send SMS OTP:", error);
+  }
+
+  if (emailSent || smsSent) {
+    res
+      .status(200)
+      .send(
+        "Company registered. OTP(s) have been sent to your email or mobile."
+      );
+  } else {
+    res
+      .status(500)
+      .json({
+        error: "Failed to send verification OTPs to both email and mobile.",
+      });
   }
 });
 
@@ -58,20 +81,22 @@ router.post("/verify-email", async (req: Request, res: Response) => {
     }
 
     if (company.emailOtp === otp) {
-      company.emailVerified = true; 
+      company.emailVerified = true;
       if (company.mobileVerified || company.emailVerified) {
-        company.verified = true; // Mark the company as verified if either email or mobile is verified
+        company.verified = true;
       }
       await company.save();
 
       //@ts-ignore
-      const token = generateJwt(company._id.toString()); 
+      const token = generateJwt(company._id.toString());
       return res.json({ message: "Email verified and auto-logged in", token });
     } else {
       res.status(400).json({ error: "Invalid OTP" });
     }
   } catch (error) {
-    res.status(500).json({ error: "An error occurred during email verification" });
+    res
+      .status(500)
+      .json({ error: "An error occurred during email verification" });
   }
 });
 
@@ -87,20 +112,22 @@ router.post("/verify-mobile", async (req: Request, res: Response) => {
     }
 
     if (company.mobileOtp === otp) {
-      company.mobileVerified = true; 
+      company.mobileVerified = true;
       if (company.emailVerified || company.mobileVerified) {
         company.verified = true; // Mark the company as verified if either mobile or email is verified
       }
       await company.save();
 
       //@ts-ignore
-      const token = generateJwt(company._id.toString()); 
+      const token = generateJwt(company._id.toString());
       return res.json({ message: "Mobile verified and auto-logged in", token });
     } else {
       res.status(400).json({ error: "Invalid OTP" });
     }
   } catch (error) {
-    res.status(500).json({ error: "An error occurred during mobile verification" });
+    res
+      .status(500)
+      .json({ error: "An error occurred during mobile verification" });
   }
 });
 
