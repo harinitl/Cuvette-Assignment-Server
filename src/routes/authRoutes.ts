@@ -136,7 +136,7 @@ router.post("/verify-mobile", async (req: Request, res: Response) => {
 router.get("/userInfo", isLoggedIn, async (req: Request, res: Response) => {
   try {
     //@ts-ignore
-    const company = await Company.findById(req.companyId).select("-emailOtp -mobileOtp");
+    const company = await Company.findById(req?.company);
 
     if (!company) {
       return res.status(404).json({ error: "Company not found" });

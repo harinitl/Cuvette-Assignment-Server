@@ -11,8 +11,14 @@ const authRoutes_1 = require("./routes/authRoutes");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+// CORS configuration
+const corsOptions = {
+    origin: "http://localhost:3000", // Allow requests from localhost:3000
+    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+    credentials: true, // Allow credentials to be sent
+};
+app.use((0, cors_1.default)(corsOptions)); // Use the configured CORS options
 const mongoDBURL = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/mydemoDB";
 mongoose_1.default
     .connect(mongoDBURL)

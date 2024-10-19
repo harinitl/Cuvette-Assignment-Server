@@ -18,6 +18,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const company_1 = __importDefault(require("../models/company"));
 const emailSender_1 = require("../utils/emailSender");
 const smsSender_1 = require("../utils/smsSender");
+const authMiddleware_1 = __importDefault(require("../middleware/authMiddleware"));
 const router = express_1.default.Router();
 exports.authRouter = router;
 const generateJwt = (companyId) => {
@@ -128,5 +129,19 @@ router.post("/verify-mobile", (req, res) => __awaiter(void 0, void 0, void 0, fu
         res
             .status(500)
             .json({ error: "An error occurred during mobile verification" });
+    }
+}));
+//@ts-ignore
+router.get("/userInfo", authMiddleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        //@ts-ignore
+        const company = yield company_1.default.findById(req === null || req === void 0 ? void 0 : req.company);
+        if (!company) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+        res.status(200).json(company); // Return company details excluding OTPs
+    }
+    catch (error) {
+        res.status(500).json({ error: "An error occurred while fetching user info" });
     }
 }));
