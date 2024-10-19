@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import Company from "../models/company";
 import { sendEmailVerificationLink } from "../utils/emailSender";
 import { sendSmsOtp } from "../utils/smsSender";
+import isLoggedIn from "../middleware/authMiddleware";
 
 const router = express.Router();
 
@@ -130,5 +131,22 @@ router.post("/verify-mobile", async (req: Request, res: Response) => {
       .json({ error: "An error occurred during mobile verification" });
   }
 });
+
+//@ts-ignore
+router.get("/userInfo", isLoggedIn, async (req: Request, res: Response) => {
+  try {
+    //@ts-ignore
+    const company = await Company.findById(req.companyId).select("-emailOtp -mobileOtp");
+
+    if (!company) {
+      return res.status(404).json({ error: "Company not found" });
+    }
+
+    res.status(200).json(company); // Return company details excluding OTPs
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching user info" });
+  }
+});
+
 
 export { router as authRouter };
