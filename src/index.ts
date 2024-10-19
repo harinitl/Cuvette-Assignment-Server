@@ -8,8 +8,16 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+
+// CORS configuration
+const corsOptions = {
+  origin: "http://localhost:3000", // Allow requests from localhost:3000
+  methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+  credentials: true, // Allow credentials to be sent
+};
+
+app.use(cors(corsOptions)); // Use the configured CORS options
 
 const mongoDBURL =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/mydemoDB";
