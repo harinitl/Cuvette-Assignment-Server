@@ -12,7 +12,7 @@ app.use(express.json());
 
 // CORS configuration
 const corsOptions = {
-  origin: "http://localhost:3000","https://cuvt-assignment-front-end.vercel.app/", // Allow requests from localhost:3000
+    origin: ["http://localhost:3000","https://cuvt-assignment-front-end.vercel.app/"], // Allow requests from localhost:3000
   methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
   credentials: true, // Allow credentials to be sent
 };
